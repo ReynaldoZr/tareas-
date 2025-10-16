@@ -1,0 +1,134 @@
+using System;
+using System.IO;
+
+class Program
+{
+    static string ruta = "personas.csv";
+
+    static void Main()
+    {
+        int opcion;
+
+        do
+        {
+            Console.WriteLine("\n--- CRUD con Archivos ---");
+            Console.WriteLine("1. Crear registro");
+            Console.WriteLine("2. Leer registros");
+            Console.WriteLine("3. Actualizar registro");
+            Console.WriteLine("4. Eliminar registro");
+            Console.WriteLine("5. Salir");
+            Console.Write("Seleccione una opción: ");
+            opcion = int.Parse(Console.ReadLine());
+
+            switch (opcion)
+            {
+                case 1: Crear(); break;
+                case 2: Leer(); break;
+                case 3: Actualizar(); break;
+                case 4: Eliminar(); break;
+                case 5: Console.WriteLine("Saliendo del programa..."); break;
+                default: Console.WriteLine("Opción inválida."); break;
+            }
+        } while (opcion != 5);
+    }
+
+    static void Crear()
+    {
+        Console.Write("Nombre: ");
+        string nombre = Console.ReadLine();
+        Console.Write("Edad: ");
+        string edad = Console.ReadLine();
+
+        File.AppendAllText(ruta, $"{nombre},{edad}\n");
+        Console.WriteLine("✅ Registro guardado correctamente.");
+    }
+
+    static void Leer()
+    {
+        if (File.Exists(ruta))
+        {
+            Console.WriteLine("\n--- Lista de personas ---");
+            string[] lineas = File.ReadAllLines(ruta);
+            foreach (string linea in lineas)
+                Console.WriteLine(linea);
+        }
+        else
+        {
+            Console.WriteLine("No hay registros guardados.");
+        }
+    }
+
+    static void Actualizar()
+    {
+        if (!File.Exists(ruta))
+        {
+            Console.WriteLine("No hay registros para actualizar.");
+            return;
+        }
+
+        string[] lineas = File.ReadAllLines(ruta);
+        Console.Write("Ingrese el nombre a actualizar: ");
+        string nombreBuscar = Console.ReadLine();
+
+        bool encontrado = false;
+
+        for (int i = 0; i < lineas.Length; i++)
+        {
+            string[] datos = lineas[i].Split(',');
+            if (datos[0].Equals(nombreBuscar, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Write("Nueva edad: ");
+                string nuevaEdad = Console.ReadLine();
+                lineas[i] = $"{datos[0]},{nuevaEdad}";
+                encontrado = true;
+                break;
+            }
+        }
+
+        if (encontrado)
+        {
+            File.WriteAllLines(ruta, lineas);
+            Console.WriteLine("✅ Registro actualizado correctamente.");
+        }
+        else
+        {
+            Console.WriteLine("Nombre no encontrado.");
+        }
+    }
+
+    static void Eliminar()
+    {
+        if (!File.Exists(ruta))
+        {
+            Console.WriteLine("No hay registros para eliminar.");
+            return;
+        }
+
+        string[] lineas = File.ReadAllLines(ruta);
+        Console.Write("Ingrese el nombre a eliminar: ");
+        string nombreEliminar = Console.ReadLine();
+
+        using (StreamWriter escritor = new StreamWriter(ruta))
+        {
+            bool eliminado = false;
+
+            foreach (string linea in lineas)
+            {
+                string[] datos = linea.Split(',');
+                if (!datos[0].Equals(nombreEliminar, StringComparison.OrdinalIgnoreCase))
+                {
+                    escritor.WriteLine(linea);
+                }
+                else
+                {
+                    eliminado = true;
+                }
+            }
+
+            if (eliminado)
+                Console.WriteLine("✅ Registro eliminado correctamente.");
+            else
+                Console.WriteLine("Nombre no encontrado.");
+        }
+    }
+}
